@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
+
 import numpy as np
+
 
 class DatasetError(Exception):
     pass
@@ -21,11 +23,9 @@ class Dataset(ABC):
 
     """
 
-
     def __init__(self, **kwargs):
         """Initialize a dataset."""
         pass
-
 
     @abstractmethod
     def load(self, **kwargs):
@@ -57,7 +57,6 @@ class Dataset(ABC):
         """
         return self
 
-
     def print_stats(self):
         """Commodity function to print information about the dataset.
 
@@ -75,5 +74,3 @@ class Dataset(ABC):
         print("Sampling frequency of {type} data: {freq}".format(type=self.data_type, freq=self.sampling_freq))
         print("Interval for motor imagery in trial: ", self.mi_interval)
         print('Classes possible: ', np.unique(self.labels))
-
-

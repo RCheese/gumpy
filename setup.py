@@ -20,13 +20,13 @@ The name of the toolbox is a reference to the Gumby Brain Specialist sketch by
 Monty Python.
 """
 
-DISTNAME         = 'gumpy'
-DESCRIPTION      = 'EEG signal processing and classification toolbox'
+DISTNAME = 'gumpy'
+DESCRIPTION = 'EEG signal processing and classification toolbox'
 LONG_DESCRIPTION = __doc__
-MAINTAINER       = 'The gumpy developers'
-MAINTAINER_MAIL  = 'zied.tayeb@tum.de'
-LICENSE          = 'MIT'
-URL              = 'www.gumpy.org'
+MAINTAINER = 'The gumpy developers'
+MAINTAINER_MAIL = 'zied.tayeb@tum.de'
+LICENSE = 'MIT'
+URL = 'www.gumpy.org'
 
 # extract version from source file
 VERSION_DATA = {}
@@ -34,18 +34,17 @@ with open('gumpy/version.py') as fp:
     exec(fp.read(), VERSION_DATA)
     VERSION = VERSION_DATA['__version__']
 
-
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 if __name__ == "__main__":
     setup(classifiers=[
-            'Development Status :: 4 - Beta',
-            'Intended Audience :: Science/Research',
-            'License :: OSI Approved :: MIT License',
-            'Programming Language :: Python :: 3',
-            'Topic :: Scientific/Engineering :: Human Machine Interfaces',
-          ],
-          install_requires = [
+        'Development Status :: 4 - Beta',
+        'Intended Audience :: Science/Research',
+        'License :: OSI Approved :: MIT License',
+        'Programming Language :: Python :: 3',
+        'Topic :: Scientific/Engineering :: Human Machine Interfaces',
+    ],
+        install_requires=[
             'numpy',
             'scipy',
             'scikit-learn',
@@ -53,15 +52,15 @@ if __name__ == "__main__":
             'pandas',
             'PyWavelets',
             'mlxtend',
-          ],
-          name=DISTNAME,
-          version=VERSION,
-          description=DESCRIPTION,
-          long_description=__doc__,
-          url=URL,
-          maintainer=MAINTAINER,
-          maintainer_email=MAINTAINER_MAIL,
-          license=LICENSE,
-          packages=find_packages(exclude=['tests*']),
-          python_requires='>=3',
-          zip_safe=False)
+        ],
+        name=DISTNAME,
+        version=VERSION,
+        description=DESCRIPTION,
+        long_description=__doc__,
+        url=URL,
+        maintainer=MAINTAINER,
+        maintainer_email=MAINTAINER_MAIL,
+        license=LICENSE,
+        packages=find_packages(exclude=['tests*']),
+        python_requires='>=3',
+        zip_safe=False)

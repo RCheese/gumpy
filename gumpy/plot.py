@@ -1,19 +1,17 @@
 """Functions for plotting EEG processing results.
 """
 
-import numpy as np
+import itertools
+
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-import sklearn.metrics as skm
-import seaborn as sns
+import numpy as np
 import pandas as pd
 import pywt
 import scipy.signal
+import seaborn as sns
 import sklearn.decomposition
-from matplotlib.gridspec import GridSpec
-from pylab import rcParams
-import itertools
+import sklearn.metrics as skm
 
 
 def plot_confusion_matrix(path, cm, target_names, title='Confusion matrix ', cmap=None, normalize=True):
@@ -73,10 +71,9 @@ def plot_confusion_matrix(path, cm, target_names, title='Confusion matrix ', cma
                      horizontalalignment="center",
                      color="white" if cm[i, j] > thresh else "black")
 
-
     plt.tight_layout()
     plt.ylabel('True label')
-    #plt.xlabel('Predicted label\naccuracy={:0.4f}; misclass={:0.4f}'.format(accuracy, misclass))
+    # plt.xlabel('Predicted label\naccuracy={:0.4f}; misclass={:0.4f}'.format(accuracy, misclass))
     plt.show()
     fig.savefig(path)
 
@@ -97,7 +94,7 @@ def ROC_curve(Y_pred, Y_test, fig=None):
     # plotting
     if fig is None:
         fig = plt.figure()
-    plt.plot(fpr, tpr, color= 'red', lw = 2)
+    plt.plot(fpr, tpr, color='red', lw=2)
     plt.plot([0, 1], [0, 1], color='navy', lw=2)
     plt.xlim([0.0, 1.0])
     plt.ylim([0.0, 1.05])
@@ -113,7 +110,7 @@ def confusion_matrix(true_labels, predicted_labels, cmap=plt.cm.Blues):
     # TODO:
     # print(cm)
     # Show confusion matrix in a separate window ?
-    plt.matshow(cm,cmap=cmap)
+    plt.matshow(cm, cmap=cmap)
     plt.title('Confusion matrix')
     plt.colorbar()
     plt.ylabel('True label')
@@ -123,12 +120,12 @@ def confusion_matrix(true_labels, predicted_labels, cmap=plt.cm.Blues):
 
 # TODO: permit the user to specify the figure where this plot shall appear
 def accuracy_results_plot(data_path):
-    data = pd.read_csv(data_path,index_col=0)
+    data = pd.read_csv(data_path, index_col=0)
     sns.boxplot(data=data)
     sns.set(rc={"figure.figsize": (9, 6)})
-    ax = sns.boxplot( data=data)
-    ax.set_xlabel(x_label,fontsize=15)
-    ax.set_ylabel(y_label,fontsize=15)
+    ax = sns.boxplot(data=data)
+    ax.set_xlabel(x_label, fontsize=15)
+    ax.set_ylabel(y_label, fontsize=15)
     plt.show()
 
 
@@ -140,7 +137,7 @@ def reconstruct_without_approx(xs, labels, level, fig=None):
     if fig is None:
         fig = plt.figure()
     for i, x in enumerate(xs):
-        plt.plot((np.abs(x))**2, label="Power of reconstructed signal ({})".format(labels[i]))
+        plt.plot((np.abs(x)) ** 2, label="Power of reconstructed signal ({})".format(labels[i]))
 
     plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
     return rs, fig
@@ -153,7 +150,7 @@ def reconstruct_with_approx(cDs, labels, wavelet, fig=None):
         fig = plt.figure()
 
     for i, r in enumerate(rs):
-        plt.plot((np.abs(r))**2, label="Power of reconstructed signal ({})".format(labels[i]))
+        plt.plot((np.abs(r)) ** 2, label="Power of reconstructed signal ({})".format(labels[i]))
     plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
 
     return rs, fig
@@ -162,7 +159,7 @@ def reconstruct_with_approx(cDs, labels, wavelet, fig=None):
 def fft(x, fs, fig_fft=None, fig_psd=None):
     t = np.arange(fs)
     signal_fft = np.fft.fft(x)
-    signal_psd = np.abs(signal_fft)**2
+    signal_psd = np.abs(signal_fft) ** 2
     freq = np.linspace(0, fs, len(signal_fft))
     freq1 = np.linspace(0, fs, len(signal_psd))
 
@@ -182,7 +179,7 @@ def dwt(approx, details, labels, level, sampling_freq, class_str=None):
     Plot the results of a DWT transform.
     """
 
-    fig, axis = plt.subplots(level+1, 1, figsize=(8, 8))
+    fig, axis = plt.subplots(level + 1, 1, figsize=(8, 8))
     fig.tight_layout()
 
     # plot the approximation
@@ -192,13 +189,14 @@ def dwt(approx, details, labels, level, sampling_freq, class_str=None):
     if class_str is None:
         axis[0].set_title('DWT approximations (level={}, sampling-freq={}Hz)'.format(level, sampling_freq))
     else:
-        axis[0].set_title('DWT approximations, {} (level={}, sampling-freq={}Hz)'.format(class_str, level, sampling_freq))
+        axis[0].set_title(
+            'DWT approximations, {} (level={}, sampling-freq={}Hz)'.format(class_str, level, sampling_freq))
     axis[0].set_ylabel('(A={})'.format(level))
 
     # build the rows of detail coefficients
-    for j in range (1,level+1):
+    for j in range(1, level + 1):
         for i, l in enumerate(labels):
-            axis[j].plot(details[i][j-1], label=l)
+            axis[j].plot(details[i][j - 1], label=l)
         if class_str is None:
             axis[j].set_title('DWT Coeffs (level{}, sampling-freq={}Hz)'.format(level, sampling_freq))
         else:
@@ -225,7 +223,7 @@ def welch_psd(xs, labels, sampling_freq, fig=None):
 
     plt.subplots_adjust(hspace=0.4)
     for i, p in enumerate(ps):
-        plt.semilogy(f/8, p.T, label=labels[i])
+        plt.semilogy(f / 8, p.T, label=labels[i])
 
     plt.xlabel('frequency [Hz]')
     plt.ylabel('PSD')
@@ -235,7 +233,6 @@ def welch_psd(xs, labels, sampling_freq, fig=None):
     plt.show()
 
     return ps, fig
-
 
 
 def artifact_removal(X, S, S_reconst, fig=None):
@@ -259,8 +256,8 @@ def artifact_removal(X, S, S_reconst, fig=None):
 
     models = [X, S, S_reconst]
     names = ['Observations (mixed signal)',
-         'True Sources',
-         'ICA recovered signals']
+             'True Sources',
+             'ICA recovered signals']
     for ii, (model, name) in enumerate(zip(models, names), 1):
         plt.subplot(3, 1, ii)
         plt.title(name)
@@ -275,13 +272,13 @@ def PCA_2D(X, X_train, Y_train, colors=None):
 
     # color and figure initialization
     if colors is None:
-        colors = ['red','cyan']
+        colors = ['red', 'cyan']
     if fig is None:
         fig = plt.figure()
 
     # plotting
     fig.suptitle('2D - Data')
-    ax = fig.add_subplot(1,1,1)
+    ax = fig.add_subplot(1, 1, 1)
     ax.scatter(X_train.T[0], X_train.T[1], alpha=0.5,
                c=Y_train, cmap=mpl.colors.ListedColormap(colors))
     ax.set_xlabel('x1')
@@ -295,13 +292,13 @@ def PCA_3D(X, X_train, Y_train, fig=None, colors=None):
 
     # color and figure initialization
     if colors is None:
-        colors = ['red','cyan']
+        colors = ['red', 'cyan']
     if fig is None:
         fig = plt.figure()
 
     # plotting
     fig.suptitle('3D - Data')
-    ax = fig.add_subplot(1,1,1, projection='3d')
+    ax = fig.add_subplot(1, 1, 1, projection='3d')
     ax.scatter(X_train.T[0], X_train.T[1], X_train.T[2], alpha=0.5,
                c=Y_train, cmap=mpl.colors.ListedColormap(colors))
     ax.set_xlabel('x1')
@@ -317,18 +314,23 @@ def PCA(ttype, X, X_train, Y_train, fig=None, colors=None):
     plot_fns[ttype](X, X_train, Y_train, fig, colors)
 
 
-
 def EEG_bandwave_visualizer(data, band_wave, n_trial, lo, hi, fig=None):
     if not fig:
         fig = plt.figure()
 
     plt.clf()
-    plt.plot(band_wave[data.trials[n_trial]-data.mi_interval[0]*data.sampling_freq : data.trials[n_trial]+data.mi_interval[0]*data.sampling_freq, 0],
-            alpha=0.7, label='C3')
-    plt.plot(band_wave[data.trials[n_trial]-data.mi_interval[0]*data.sampling_freq : data.trials[n_trial]+data.mi_interval[0]*data.sampling_freq, 1],
-            alpha=0.7, label='C4')
-    plt.plot(band_wave[data.trials[n_trial]-data.mi_interval[0]*data.sampling_freq : data.trials[n_trial]+data.mi_interval[0]*data.sampling_freq, 2],
-            alpha=0.7, label='Cz')
+    plt.plot(band_wave[
+             data.trials[n_trial] - data.mi_interval[0] * data.sampling_freq: data.trials[n_trial] + data.mi_interval[
+                 0] * data.sampling_freq, 0],
+             alpha=0.7, label='C3')
+    plt.plot(band_wave[
+             data.trials[n_trial] - data.mi_interval[0] * data.sampling_freq: data.trials[n_trial] + data.mi_interval[
+                 0] * data.sampling_freq, 1],
+             alpha=0.7, label='C4')
+    plt.plot(band_wave[
+             data.trials[n_trial] - data.mi_interval[0] * data.sampling_freq: data.trials[n_trial] + data.mi_interval[
+                 0] * data.sampling_freq, 2],
+             alpha=0.7, label='Cz')
 
     plt.legend()
     plt.title("Filtered data  (Band wave {}-{})".format(lo, hi))
@@ -340,29 +342,29 @@ def EEG_bandwave_visualizer(data, band_wave, n_trial, lo, hi, fig=None):
 def average_power(data_class1, lowcut, highcut, interval, sampling_freq, logarithmic_power):
     fs = sampling_freq
     if logarithmic_power:
-        power_c3_c1_a  = np.log(np.power(data_class1[0], 2).mean(axis=0))
-        power_c4_c1_a  = np.log(np.power(data_class1[1], 2).mean(axis=0))
-        power_cz_c1_a  = np.log(np.power(data_class1[2], 2).mean(axis=0))
-        power_c3_c2_a  = np.log(np.power(data_class1[3], 2).mean(axis=0))
-        power_c4_c2_a  = np.log(np.power(data_class1[4], 2).mean(axis=0))
-        power_cz_c2_a  = np.log(np.power(data_class1[5], 2).mean(axis=0))
+        power_c3_c1_a = np.log(np.power(data_class1[0], 2).mean(axis=0))
+        power_c4_c1_a = np.log(np.power(data_class1[1], 2).mean(axis=0))
+        power_cz_c1_a = np.log(np.power(data_class1[2], 2).mean(axis=0))
+        power_c3_c2_a = np.log(np.power(data_class1[3], 2).mean(axis=0))
+        power_c4_c2_a = np.log(np.power(data_class1[4], 2).mean(axis=0))
+        power_cz_c2_a = np.log(np.power(data_class1[5], 2).mean(axis=0))
     else:
-        power_c3_c1_a  = np.power(data_class1[0], 2).mean(axis=0)
-        power_c4_c1_a  = np.power(data_class1[1], 2).mean(axis=0)
-        power_cz_c1_a  = np.power(data_class1[2], 2).mean(axis=0)
-        power_c3_c2_a  = np.power(data_class1[3], 2).mean(axis=0)
-        power_c4_c2_a  = np.power(data_class1[4], 2).mean(axis=0)
-        power_cz_c2_a  = np.power(data_class1[5], 2).mean(axis=0)
+        power_c3_c1_a = np.power(data_class1[0], 2).mean(axis=0)
+        power_c4_c1_a = np.power(data_class1[1], 2).mean(axis=0)
+        power_cz_c1_a = np.power(data_class1[2], 2).mean(axis=0)
+        power_c3_c2_a = np.power(data_class1[3], 2).mean(axis=0)
+        power_c4_c2_a = np.power(data_class1[4], 2).mean(axis=0)
+        power_cz_c2_a = np.power(data_class1[5], 2).mean(axis=0)
 
     # time indices
-    t = np.linspace(interval[0],interval[1],len(power_c3_c1_a[fs*interval[0]:fs*interval[1]]))
+    t = np.linspace(interval[0], interval[1], len(power_c3_c1_a[fs * interval[0]:fs * interval[1]]))
 
     # first figure, left motor imagery
     plt.figure()
-    plt.plot(t, power_c3_c1_a[fs*interval[0]:fs*interval[1]], c='blue',
-                    label='C3', alpha=0.7)
-    plt.plot(t,power_c4_c1_a [fs*interval[0]:fs*interval[1]],c='red',
-                    label='C4', alpha=0.7)
+    plt.plot(t, power_c3_c1_a[fs * interval[0]:fs * interval[1]], c='blue',
+             label='C3', alpha=0.7)
+    plt.plot(t, power_c4_c1_a[fs * interval[0]:fs * interval[1]], c='red',
+             label='C4', alpha=0.7)
     plt.legend()
     plt.xlabel('Time')
     if logarithmic_power:
@@ -375,8 +377,8 @@ def average_power(data_class1, lowcut, highcut, interval, sampling_freq, logarit
     # second figure, right motor imagery
     plt.figure()
     plt.clf()
-    plt.plot(t, power_c3_c2_a[fs*interval[0] : fs*interval[1]], c='blue', label='C3', alpha=0.7)
-    plt.plot(t, power_c4_c2_a[fs*interval[0] : fs*interval[1]], c='red', label='C4', alpha=0.7)
+    plt.plot(t, power_c3_c2_a[fs * interval[0]: fs * interval[1]], c='blue', label='C3', alpha=0.7)
+    plt.plot(t, power_c4_c2_a[fs * interval[0]: fs * interval[1]], c='red', label='C4', alpha=0.7)
     plt.legend()
     plt.xlabel('Time')
     if logarithmic_power:

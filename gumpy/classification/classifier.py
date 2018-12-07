@@ -1,8 +1,10 @@
 from abc import ABC, abstractmethod
-from sklearn.metrics import classification_report
-from sklearn.ensemble import VotingClassifier
-from mlxtend.feature_selection import SequentialFeatureSelector as SFS
+
 import numpy as np
+from mlxtend.feature_selection import SequentialFeatureSelector as SFS
+from sklearn.ensemble import VotingClassifier
+from sklearn.metrics import classification_report
+
 
 class ClassifierError(Exception):
     pass
@@ -32,7 +34,6 @@ class Classifier(ABC):
     def __init__(self):
         pass
 
-
     @staticmethod
     def static_opts(ftype, **kwargs):
         """Return a kwargs dict for voting classification or feature computation.
@@ -52,7 +53,6 @@ class Classifier(ABC):
             A kwargs dictionary that can be passed to ``__init__``
         """
         return {}
-
 
     @abstractmethod
     def run(self, X_train, Y_train, X_test, Y_test, **kwargs):
@@ -76,7 +76,6 @@ class Classifier(ABC):
         """
         return None, self
 
-
     def __call__(self, X_train, Y_train, X_test, Y_test, **kwargs):
         return self.run(X_train, Y_train, X_test, Y_test)
 
@@ -99,7 +98,6 @@ class ClassificationResult:
 
     def __str__(self):
         return self.report
-
 
 
 # list of known classifiers.
@@ -128,7 +126,6 @@ def register_classifier(cls):
 
     available_classifiers[cls.__name__] = cls
     return cls
-
 
 
 def classify(c, *args, **kwargs):
@@ -189,7 +186,6 @@ def classify(c, *args, **kwargs):
     raise ClassifierError("Unknown classifier {c}".format(c=c.__repr__()))
 
 
-
 def vote(X_train, Y_train, X_test, Y_test, voting_type, feature_selection, k_features):
     """Invokation of a soft voting/majority rule classification.
 
@@ -215,7 +211,7 @@ def vote(X_train, Y_train, X_test, Y_test, voting_type, feature_selection, k_fea
     """
 
     k_cross_val = 10
-    N_JOBS=-1
+    N_JOBS = -1
 
     clfs = []
     for classifier in available_classifiers:
@@ -246,8 +242,6 @@ def vote(X_train, Y_train, X_test, Y_test, voting_type, feature_selection, k_fea
     soft_vote_clf.fit(X_train, Y_train)
     Y_pred = soft_vote_clf.predict(X_test)
     return ClassificationResult(Y_test, Y_pred), soft_vote_clf
-
-
 
 # TODO: what to do with this old code? adopt it similar to `vote` above?
 # def cross_validation_classification (classifier,X, y, k):

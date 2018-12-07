@@ -20,15 +20,13 @@ passed when creating a filter class. The commodity functions forward all
 # TODO: description above. check if we really have a filter class for every
 #       filter, or if we specify them
 
-from .data.dataset import Dataset
-
 import numpy as np
-import pandas as pd
+import pywt
 import scipy.signal
-from scipy.signal import butter, lfilter, freqz, iirnotch, filtfilt
 import scipy.stats
 import sklearn.decomposition
-import pywt
+
+from .data.dataset import Dataset
 
 
 class ButterBandpass:
@@ -55,7 +53,6 @@ class ButterBandpass:
         high = highcut / nyq
         self.b, self.a = scipy.signal.butter(order, [low, high], btype='bandpass')
 
-
     def process(self, data, axis=0):
         """Apply the filter to data along a given axis.
 
@@ -68,7 +65,6 @@ class ButterBandpass:
 
         """
         return scipy.signal.filtfilt(self.b, self.a, data, axis)
-
 
 
 def butter_bandpass(data, lo, hi, axis=0, **kwargs):
@@ -100,7 +96,6 @@ def butter_bandpass(data, lo, hi, axis=0, **kwargs):
         return flt.process(data, axis)
 
 
-
 class ButterHighpass:
     """Filter class for a Butterworth bandpass filter.
 
@@ -122,7 +117,6 @@ class ButterHighpass:
         high = cutoff / nyq
         self.b, self.a = scipy.signal.butter(order, high, btype='highpass')
 
-
     def process(self, data, axis=0):
         """Apply the filter to data along a given axis.
 
@@ -135,7 +129,6 @@ class ButterHighpass:
 
         """
         return scipy.signal.filtfilt(self.b, self.a, data, axis)
-
 
 
 def butter_highpass(data, cutoff, axis=0, **kwargs):
@@ -165,7 +158,6 @@ def butter_highpass(data, cutoff, axis=0, **kwargs):
     else:
         flt = ButterHighpass(cutoff, **kwargs)
         return flt.process(data, axis)
-
 
 
 class ButterLowpass:
@@ -204,7 +196,6 @@ class ButterLowpass:
         return scipy.signal.filtfilt(self.b, self.a, data, axis)
 
 
-
 def butter_lowpass(data, cutoff, axis=0, **kwargs):
     """Apply a Butterworth lowpass filter to some data.
 
@@ -233,7 +224,6 @@ def butter_lowpass(data, cutoff, axis=0, **kwargs):
         return flt.process(data, axis)
 
 
-
 class ButterBandstop:
     """Filter class for a Butterworth bandstop filter.
 
@@ -257,7 +247,6 @@ class ButterBandstop:
         high = highpass / nyq
         self.b, self.a = scipy.signal.butter(order, [low, high], btype='bandstop')
 
-
     def process(self, data, axis=0):
         """Apply the filter to data along a given axis.
 
@@ -270,7 +259,6 @@ class ButterBandstop:
 
         """
         return scipy.signal.filtfilt(self.b, self.a, data, axis)
-
 
 
 def butter_bandstop(data, axis=0, **kwargs):
@@ -300,7 +288,6 @@ def butter_bandstop(data, axis=0, **kwargs):
         return flt.process(data, axis)
 
 
-
 class Notch:
     """Filter class for a notch filter.
 
@@ -321,7 +308,6 @@ class Notch:
         w0 = cutoff / nyq
         self.b, self.a = scipy.signal.iirnotch(w0, Q)
 
-
     def process(self, data, axis=0):
         """Apply the filter to data along a given axis.
 
@@ -334,7 +320,6 @@ class Notch:
 
         """
         return scipy.signal.filtfilt(self.b, self.a, data, axis)
-
 
 
 def notch(data, cutoff, axis=0, **kwargs):
@@ -364,17 +349,14 @@ def notch(data, cutoff, axis=0, **kwargs):
         return flt.process(data, axis)
 
 
-
 def _norm_min_max(data):
-    return (data - np.min(data))/(np.max(data)-np.min(data))
-
+    return (data - np.min(data)) / (np.max(data) - np.min(data))
 
 
 def _norm_mean_std(data):
     mean = np.mean(data, axis=0)
     std_dev = np.std(data, axis=0)
     return (data - mean) / std_dev
-
 
 
 def normalize(data, normalization_type):
@@ -396,15 +378,14 @@ def normalize(data, normalization_type):
 
     """
     norm_fns = {'mean_std': _norm_mean_std,
-                'min_max' : _norm_min_max
-    }
+                'min_max': _norm_min_max
+                }
     if not normalization_type in norm_fns:
         raise Exception("Normalization method '{m}' is not supported".format(m=normalization_type))
     if isinstance(data, Dataset):
         return norm_fns[normalization_type](data.raw_data)
     else:
         return norm_fns[normalization_type](data)
-
 
 
 def EEG_mean_power(data):
@@ -414,8 +395,7 @@ def EEG_mean_power(data):
     return np.power(data, 2).mean(axis=0)
 
 
-
-#def bootstrap_resample(X, n=None):
+# def bootstrap_resample(X, n=None):
 #    """Resample data.
 #
 #    Args:
@@ -437,7 +417,6 @@ def EEG_mean_power(data):
 #    return np.array(X[resample_i])
 
 
-
 def dwt(raw_eeg_data, level, **kwargs):
     """Multilevel Discrete Wavelet Transform (DWT).
 
@@ -455,20 +434,19 @@ def dwt(raw_eeg_data, level, **kwargs):
         - **list**: list of mean values for the individual (detail) decomposition coefficients
 
     """
-    wt_coeffs = pywt.wavedec(data = raw_eeg_data, level=level, **kwargs)
+    wt_coeffs = pywt.wavedec(data=raw_eeg_data, level=level, **kwargs)
 
     # A7:  0 Hz - 1 Hz
     cAL_mean = np.nanmean(wt_coeffs[0], axis=0)
     details = []
 
     # For Fs = 128 H
-    for i in range(1, level+1):
+    for i in range(1, level + 1):
         # D7:  1 Hz - 2 Hz
         cDL_mean = np.nanmean(wt_coeffs[i], axis=0)
         details.append(cDL_mean)
 
     return cAL_mean, details
-
 
 
 def rms(signal, fs, window_size, window_shift):
@@ -483,27 +461,25 @@ def rms(signal, fs, window_size, window_shift):
     Returns:
         TODO:
     """
-    duration = len(signal)/fs
-    n_features = int(duration/(window_size-window_shift))
+    duration = len(signal) / fs
+    n_features = int(duration / (window_size - window_shift))
 
     features = np.zeros(n_features)
 
     for i in range(n_features):
-        idx1 = int((i*(window_size-window_shift))*fs)
-        idx2 = int(((i+1)*window_size-i*window_shift)*fs)
+        idx1 = int((i * (window_size - window_shift)) * fs)
+        idx2 = int(((i + 1) * window_size - i * window_shift) * fs)
         rms = np.sqrt(np.mean(np.square(signal[idx1:idx2])))
         features[i] = rms
 
     return features
 
 
-
 def correlation(x, y):
     """Compute the correlation between x and y using Pearson's r.
 
     """
-    return scipy.stats.pearsonr(x,y)
-
+    return scipy.stats.pearsonr(x, y)
 
 
 def artifact_removal(X, n_components=None, check_result=True):
@@ -536,29 +512,46 @@ def artifact_removal(X, n_components=None, check_result=True):
     return S_reconst, A_mixing
 
 
-def sliding_window(data, labels, window_sz, n_hop, n_start=0, show_status=False):
-    """
-    input: (array) data : matrix to be processed
-           (int)   window_sz : nb of samples to be used in the window
-           (int)   n_hop : size of jump between windows
-    output:(array) new_data : output matrix of size (None, window_sz, feature_dim)
-
-    """
-    flag = 0
-    for sample in range(data.shape[0]):
-        tmp = np.array(
-            [data[sample, i:i + window_sz, :] for i in np.arange(n_start, data.shape[1] - window_sz + n_hop, n_hop)])
-
-        tmp_lab = np.array([labels[sample] for i in np.arange(n_start, data.shape[1] - window_sz + n_hop, n_hop)])
-
-        if sample % 100 == 0 and show_status == True:
-            print("Sample " + str(sample) + "processed!\n")
-
-        if flag == 0:
-            new_data = tmp
-            new_lab = tmp_lab
-            flag = 1
-        else:
-            new_data = np.concatenate((new_data, tmp))
-            new_lab = np.concatenate((new_lab, tmp_lab))
+def sliding_window(data, labels, window_sz, n_hop, n_start=0, show_status=False):
+    """
+
+    input: (array) data : matrix to be processed
+
+           (int)   window_sz : nb of samples to be used in the window
+
+           (int)   n_hop : size of jump between windows
+
+    output:(array) new_data : output matrix of size (None, window_sz, feature_dim)
+
+
+
+    """
+
+    flag = 0
+
+    for sample in range(data.shape[0]):
+
+        tmp = np.array(
+
+            [data[sample, i:i + window_sz, :] for i in np.arange(n_start, data.shape[1] - window_sz + n_hop, n_hop)])
+
+        tmp_lab = np.array([labels[sample] for i in np.arange(n_start, data.shape[1] - window_sz + n_hop, n_hop)])
+
+        if sample % 100 == 0 and show_status == True:
+            print("Sample " + str(sample) + "processed!\n")
+
+        if flag == 0:
+
+            new_data = tmp
+
+            new_lab = tmp_lab
+
+            flag = 1
+
+        else:
+
+            new_data = np.concatenate((new_data, tmp))
+
+            new_lab = np.concatenate((new_lab, tmp_lab))
+
     return new_data, new_lab

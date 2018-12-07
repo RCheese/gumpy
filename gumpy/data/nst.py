@@ -1,7 +1,9 @@
-from .dataset import Dataset, DatasetError
 import os
+
 import numpy as np
 import scipy.io
+
+from .dataset import Dataset, DatasetError
 
 
 class NST(Dataset):
@@ -40,7 +42,7 @@ class NST(Dataset):
         # idle period prior to trial start (in seconds)
         self.trial_offset = 4
         # total time of the trial
-        self.trial_total = self.trial_offset + self.trial_len+2
+        self.trial_total = self.trial_offset + self.trial_len + 2
         # interval of motor imagery within trial_t (in seconds)
         self.mi_interval = [self.trial_offset, self.trial_offset + self.trial_len]
 
@@ -61,7 +63,6 @@ class NST(Dataset):
             if not os.path.isfile(f):
                 raise DatasetError("NST Dataset ({id}) file '{f}' unavailable".format(id=self.data_id, f=f))
 
-
     def load(self, **kwargs):
         """Loads an NST dataset.
 
@@ -74,13 +75,13 @@ class NST(Dataset):
 
         fs = mat1['Fs'].flatten()[0]
         # read matlab data
-        raw_data1 = mat1['X'][:,0:3]
-        raw_data2 = mat2['X'][:,0:3]
-        raw_data3 = mat3['X'][:,0:3]
+        raw_data1 = mat1['X'][:, 0:3]
+        raw_data2 = mat2['X'][:, 0:3]
+        raw_data3 = mat3['X'][:, 0:3]
         trials1 = mat1['trial'][0]
         trials2 = mat2['trial'][0]
         trials3 = mat3['trial'][0]
-        raw_data3 = mat3['X'][:,0:3]
+        raw_data3 = mat3['X'][:, 0:3]
 
         # extract labels
         labels1 = mat1['Y'].flatten() - 1
@@ -88,9 +89,9 @@ class NST(Dataset):
         labels3 = mat3['Y'].flatten() - 1
 
         # prepare trial data
-        trials1 = mat1['trial'].flatten() -  fs*self.trial_offset
-        trials2 = mat2['trial'].flatten() -  fs*self.trial_offset
-        trials3 = mat3['trial'].flatten() -  fs*self.trial_offset
+        trials1 = mat1['trial'].flatten() - fs * self.trial_offset
+        trials2 = mat2['trial'].flatten() - fs * self.trial_offset
+        trials3 = mat3['trial'].flatten() - fs * self.trial_offset
         trials2 += raw_data1.T.shape[1]
         trials3 += raw_data1.T.shape[1] + raw_data2.T.shape[1]
 
@@ -99,8 +100,8 @@ class NST(Dataset):
         self.labels = np.concatenate((labels1, labels2, labels3))
         self.trials = np.concatenate((trials1, trials2, trials3))
         self.sampling_freq = fs
-        if self.n_classes == 2: # Remove class 3 if desired
-            c3_idxs = np.where(self.labels==2)[0]
+        if self.n_classes == 2:  # Remove class 3 if desired
+            c3_idxs = np.where(self.labels == 2)[0]
             self.labels = np.delete(self.labels, c3_idxs)
             self.trials = np.delete(self.trials, c3_idxs)
 

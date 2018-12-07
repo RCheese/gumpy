@@ -7,20 +7,20 @@ that were found to work on most datasets.
 # TODO: check consistency in variable naming
 # TODO: implement unit tests
 
-from .classifier import Classifier, ClassificationResult, register_classifier
-
-# selectively import relevant sklearn classes. Prepend them with _ to avoid
-# confusion with classes specified in this module
-from sklearn.svm import SVC as _SVC
-from sklearn.model_selection import GridSearchCV
 from sklearn import neighbors
-from sklearn.neural_network import MLPClassifier as _MLPClassifier
-from sklearn.linear_model import LogisticRegression as _LogisticRegression
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as _LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis as _QuadraticDiscriminantAnalysis
-from sklearn.naive_bayes import GaussianNB as _GaussianNB
+from sklearn.discriminant_analysis import \
+    LinearDiscriminantAnalysis as _LinearDiscriminantAnalysis
+from sklearn.discriminant_analysis import \
+    QuadraticDiscriminantAnalysis as _QuadraticDiscriminantAnalysis
 from sklearn.ensemble import RandomForestClassifier as _RandomForestClassifier
+from sklearn.linear_model import LogisticRegression as _LogisticRegression
+from sklearn.model_selection import GridSearchCV
+from sklearn.naive_bayes import GaussianNB as _GaussianNB
+from sklearn.neural_network import MLPClassifier as _MLPClassifier
+from sklearn.svm import SVC as _SVC
 from sklearn.tree import DecisionTreeClassifier as _DecisionTreeClassifier
 
+from .classifier import ClassificationResult, Classifier, register_classifier
 
 # some 'good' default values across different classifiers
 
@@ -60,7 +60,7 @@ class SVM(Classifier):
             'kernel': ['rbf', 'sigmoid', 'poly'],
             'C': [1e1, 1e2, 1e3, 1e4],
             'gamma': [1e4, 1e3, 1e2, 1, 1e-1, 1e-2],
-            'degree': [2,3,4]}]
+            'degree': [2, 3, 4]}]
         self.k_cross_val = kwargs.pop('k_cross_val', 5)
 
         # initialize the classifier using grid search to find optimal parameters
@@ -73,7 +73,6 @@ class SVM(Classifier):
             probability = kwargs.pop('probability', True)
             self.clf = _SVC(max_iter=self.max_iter, probability=probability, **kwargs)
 
-
     @staticmethod
     def static_opts(ftype, **kwargs):
         """Returns default options for voting classification.
@@ -82,13 +81,11 @@ class SVM(Classifier):
         """
         return {'cross_validation': False}
 
-
     def run(self, X_train, Y_train, X_test, Y_test, **kwargs):
         self.clf.fit(X_train, Y_train.astype(int))
         Y_pred = self.clf.predict(X_test)
         result = ClassificationResult(Y_test, Y_pred)
         return result, self
-
 
 
 @register_classifier
@@ -112,12 +109,10 @@ class KNN(Classifier):
         self.nneighbors = kwargs.pop('n_neighbors', 5)
         self.clf = neighbors.KNeighborsClassifier(n_neighbors=self.nneighbors, **kwargs)
 
-
     def run(self, X_train, Y_train, X_test, Y_test, **kwargs):
         self.clf.fit(X_train, Y_train.astype(int))
         Y_pred = self.clf.predict(X_test)
         return ClassificationResult(Y_test, Y_pred), self
-
 
 
 @register_classifier
@@ -129,7 +124,6 @@ class LDA(Classifier):
     def __init__(self, **kwargs):
         super(LDA, self).__init__()
         self.clf = _LinearDiscriminantAnalysis(**kwargs)
-
 
     def run(self, X_train, Y_train, X_test, Y_test, **kwargs):
         self.clf.fit(X_train, Y_train.astype(int))
@@ -147,12 +141,11 @@ class Tree(Classifier):
         super(Tree, self).__init__()
         self.clf = _DecisionTreeClassifier(**kwargs)
 
-
     def run(self, X_train, Y_train, X_test, Y_test, **kwargs):
         self.clf.fit(X_train, Y_train.astype(int))
         Y_pred = self.clf.predict(X_test)
         return ClassificationResult(Y_test, Y_pred), self
-    
+
 
 @register_classifier
 class LogisticRegression(Classifier):
@@ -178,7 +171,6 @@ class LogisticRegression(Classifier):
         self.clf.fit(X_train, Y_train.astype(int))
         Y_pred = self.clf.predict(X_test)
         return ClassificationResult(Y_test, Y_pred), self
-
 
 
 @register_classifier
@@ -219,7 +211,6 @@ class MLP(Classifier):
         if not (self.hidden_layer_sizes == -1):
             self.initMLPClassifier(**kwargs)
 
-
     @staticmethod
     def static_opts(ftype, **kwargs):
         """Sets options that are required during voting and feature selection runs.
@@ -243,7 +234,6 @@ class MLP(Classifier):
 
         return opts
 
-
     def initMLPClassifier(self, **kwargs):
         self.hidden_layer_sizes = kwargs.pop('hidden_layer_sizes', self.hidden_layer_sizes)
         self.clf = _MLPClassifier(solver=self.solver,
@@ -251,7 +241,6 @@ class MLP(Classifier):
                                   hidden_layer_sizes=self.hidden_layer_sizes,
                                   random_state=self.random_state,
                                   **kwargs)
-
 
     def run(self, X_train, Y_train, X_test, Y_test, **kwargs):
         """Run the MLP classifier.
@@ -269,7 +258,6 @@ class MLP(Classifier):
         return ClassificationResult(Y_test, Y_pred), self
 
 
-
 @register_classifier
 class NaiveBayes(Classifier):
     """
@@ -279,12 +267,10 @@ class NaiveBayes(Classifier):
         super(NaiveBayes, self).__init__()
         self.clf = _GaussianNB(**kwargs)
 
-
     def run(self, X_train, Y_train, X_test, Y_test, **kwargs):
         self.clf.fit(X_train, Y_train.astype(int))
         Y_pred = self.clf.predict(X_test)
         return ClassificationResult(Y_test, Y_pred), self
-
 
 
 @register_classifier
@@ -331,8 +317,8 @@ class RandomForest(Classifier):
             # TODO: move to static_opts?
             criterion = kwargs.pop('criterion', 'gini')
             n_estimators = kwargs.pop('n_estimators', 10)
-            self.clf = _RandomForestClassifier(criterion=criterion, n_estimators=n_estimators, n_jobs=self.n_jobs, **kwargs)
-
+            self.clf = _RandomForestClassifier(criterion=criterion, n_estimators=n_estimators, n_jobs=self.n_jobs,
+                                               **kwargs)
 
     @staticmethod
     def static_opts(ftype, **kwargs):
@@ -342,13 +328,11 @@ class RandomForest(Classifier):
         """
         return {'cross_validation': False}
 
-
     def run(self, X_train, Y_train, X_test, Y_test, **kwargs):
         self.clf.fit(X_train, Y_train.astype(int))
         Y_pred = self.clf.predict(X_test)
         result = ClassificationResult(Y_test, Y_pred)
         return result, self
-
 
 
 @register_classifier
@@ -361,7 +345,6 @@ class QuadraticLDA(Classifier):
         self.clf.fit(X_train, Y_train.astype(int))
         Y_pred = self.clf.predict(X_test)
         return ClassificationResult(Y_test, Y_pred), self
-
 
 
 @register_classifier
@@ -389,4 +372,3 @@ class ShrinkingLDA(Classifier):
         self.clf.fit(X_train, Y_train.astype(int))
         Y_pred = self.clf.predict(X_test)
         return ClassificationResult(Y_test, Y_pred), self
-

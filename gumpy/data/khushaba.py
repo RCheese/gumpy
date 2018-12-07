@@ -1,7 +1,9 @@
-from .dataset import Dataset, DatasetError
 import os
+
 import numpy as np
 import scipy.io
+
+from .dataset import Dataset, DatasetError
 
 
 # TODO: BROKEN!
@@ -48,7 +50,7 @@ class Khushaba(Dataset):
         # idle period prior to trial start (in seconds)
         self.trial_offset = None
         # total time of the trial
-        self.trial_total = None #self.trial_offset + self.trial_len
+        self.trial_total = None  # self.trial_offset + self.trial_len
         # interval of motor imagery within trial_t (in seconds)
         self.mi_interval = [self.trial_offset, self.trial_offset + self.trial_len]
 
@@ -57,7 +59,6 @@ class Khushaba(Dataset):
         self.trials = None
         self.labels = None
         self.sampling_freq = 2000
-
 
     def load(self, **kwargs):
         """Loads a Khushaba dataset.
@@ -83,7 +84,6 @@ class Khushaba(Dataset):
 
         return self
 
-
     def getClassTrials(self, class_name):
         """Return all class trials and labels.
 
@@ -101,10 +101,10 @@ class Khushaba(Dataset):
         label_list = []
 
         for force_level in self._force_levels:
-            path = base_dir+'{}_Force Exp/{}_{}/'.format(self.data_id, class_name, force_level)
+            path = base_dir + '{}_Force Exp/{}_{}/'.format(self.data_id, class_name, force_level)
 
-            for i in range(1,6):
-                file = path+'{}_{}_{}_t{}.mat'.format(self.data_id, class_name, force_level, str(i))
+            for i in range(1, 6):
+                file = path + '{}_{}_{}_t{}.mat'.format(self.data_id, class_name, force_level, str(i))
 
                 trial = scipy.io.loadmat(file)['t{}'.format(i)]
 

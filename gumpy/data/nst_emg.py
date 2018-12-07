@@ -1,7 +1,9 @@
-from .dataset import Dataset, DatasetError
 import os
+
 import numpy as np
 import scipy.io
+
+from .dataset import Dataset, DatasetError
 
 
 class NST_EMG(Dataset):
@@ -34,11 +36,11 @@ class NST_EMG(Dataset):
         self.data_type = 'EMG'
         self.data_name = 'NST_EMG'
 
-        self.electrodePairList = [(0, 2), (1, 3), (4, 6), (5,7)]
+        self.electrodePairList = [(0, 2), (1, 3), (4, 6), (5, 7)]
         self.channel = []
-        self.trialSignalOffset = (0.5,5.5)
-        self.trialBgOffset = (5.5,10.5)
-        self.trialForceOffset = (5,10)
+        self.trialSignalOffset = (0.5, 5.5)
+        self.trialBgOffset = (5.5, 10.5)
+        self.trialForceOffset = (5, 10)
         self.duration = 5
 
         # number of classes in the dataset
@@ -65,18 +67,24 @@ class NST_EMG(Dataset):
 
         # S1
         if self.data_id == 'S1':
-            file_list_highForce = ['session_14_26_15_01_2018.mat', 'session_14_35_15_01_2018.mat', 'session_14_43_15_01_2018.mat']
-            file_list_lowForce = ['session_15_00_15_01_2018.mat', 'session_15_08_15_01_2018.mat', 'session_15_16_15_01_2018.mat']
+            file_list_highForce = ['session_14_26_15_01_2018.mat', 'session_14_35_15_01_2018.mat',
+                                   'session_14_43_15_01_2018.mat']
+            file_list_lowForce = ['session_15_00_15_01_2018.mat', 'session_15_08_15_01_2018.mat',
+                                  'session_15_16_15_01_2018.mat']
 
         # S2
         elif self.data_id == 'S2':
-            file_list_highForce = ['session_14_51_10_01_2018.mat', 'session_15_10_10_01_2018.mat', 'session_15_10_10_01_2018.mat']
-            file_list_lowForce = ['session_15_25_10_01_2018.mat', 'session_15_32_10_01_2018.mat', 'session_15_45_10_01_2018.mat']
+            file_list_highForce = ['session_14_51_10_01_2018.mat', 'session_15_10_10_01_2018.mat',
+                                   'session_15_10_10_01_2018.mat']
+            file_list_lowForce = ['session_15_25_10_01_2018.mat', 'session_15_32_10_01_2018.mat',
+                                  'session_15_45_10_01_2018.mat']
 
         # S3
         elif self.data_id == 'S3':
-            file_list_highForce = ['session_13_04_16_01_2018.mat', 'session_13_10_16_01_2018.mat', 'session_13_18_16_01_2018.mat']
-            file_list_lowForce = ['session_13_26_16_01_2018.mat', 'session_13_31_16_01_2018.mat', 'session_13_35_16_01_2018.mat']
+            file_list_highForce = ['session_13_04_16_01_2018.mat', 'session_13_10_16_01_2018.mat',
+                                   'session_13_18_16_01_2018.mat']
+            file_list_lowForce = ['session_13_26_16_01_2018.mat', 'session_13_31_16_01_2018.mat',
+                                  'session_13_35_16_01_2018.mat']
 
         # S4
         elif self.data_id == 'S4':
@@ -89,7 +97,6 @@ class NST_EMG(Dataset):
         elif self.force_level == 'low':
             self.fileList = file_list_lowForce
 
-
     def load(self, **kwargs):
         """Load an NST_EMG dataset.
 
@@ -97,10 +104,10 @@ class NST_EMG(Dataset):
         :meth:`gumpy.data.Dataset.load`
         """
 
-        trial_len = 5   # sec (length of a trial after trial_sample)
-        trial_offset = 5    # idle period prior to trial start [sec]
-        self.trial_total = trial_offset + trial_len    # total length of trial
-        self.mi__interval = [trial_offset, trial_offset+trial_len] # interval of motor imagery within trial_t [sec]
+        trial_len = 5  # sec (length of a trial after trial_sample)
+        trial_offset = 5  # idle period prior to trial start [sec]
+        self.trial_total = trial_offset + trial_len  # total length of trial
+        self.mi__interval = [trial_offset, trial_offset + trial_len]  # interval of motor imagery within trial_t [sec]
 
         matrices = []
         raw_data_ = []
@@ -116,34 +123,32 @@ class NST_EMG(Dataset):
             except Exception as e:
                 print('An exception occured while reading file {}: {}'.format(file, e))
 
-
         # read matlab data
         for matrix in matrices:
-            raw_data_.append(matrix['X'][:,:])
+            raw_data_.append(matrix['X'][:, :])
             labels_.append(matrix['Y'][:])
             trials_.append(matrix['trial'][:])
 
-            #forces_.append(matrix['force'][:].T)
+            # forces_.append(matrix['force'][:].T)
 
-            size_X = len(matrix['X'][:,0])
+            size_X = len(matrix['X'][:, 0])
             size_force = np.shape(matrix['force'][:])[1]
 
-            #print(size_X)
-            #print(size_force)
+            # print(size_X)
+            # print(size_force)
 
-            Zero = size_X-size_force
+            Zero = size_X - size_force
             f = np.zeros((1, size_X))
             f[0, Zero:] = matrix['force'][:]
             forces_.append(f.T)
 
-
-            #forces_.append(matrix['force'][:])
+            # forces_.append(matrix['force'][:])
 
         # to get the correct values of the trials
         for i in range(1, len(trials_)):
-            trials_[i] += raw_data_[i-1].T.shape[1]
+            trials_[i] += raw_data_[i - 1].T.shape[1]
 
-        #combine matrices together
+        # combine matrices together
         self.raw_data = np.concatenate(tuple(raw_data_))
         self.labels = np.concatenate(tuple(labels_))
         self.trials = np.concatenate(tuple(trials_))
@@ -155,12 +160,11 @@ class NST_EMG(Dataset):
         self.forces[self.forces < 0] = 0
 
         # Remove class 3
-        c3_idxs = np.where(self.labels==3)[0]
+        c3_idxs = np.where(self.labels == 3)[0]
         self.labels = np.delete(self.labels, c3_idxs)
         self.trials = np.delete(self.trials, c3_idxs)
 
-        self.labels = np.hstack((self.labels, 3*np.ones(int(self.trials.shape[0]/3))))
-
+        self.labels = np.hstack((self.labels, 3 * np.ones(int(self.trials.shape[0] / 3))))
 
         self.sampling_freq = matrices[0]['Fs'].flatten()[0]
 

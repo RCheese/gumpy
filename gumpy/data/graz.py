@@ -1,7 +1,9 @@
-from .dataset import Dataset, DatasetError
 import os
+
 import numpy as np
 import scipy.io
+
+from .dataset import Dataset, DatasetError
 
 
 class GrazB(Dataset):
@@ -57,7 +59,6 @@ class GrazB(Dataset):
         self.trials = None
         self.sampling_freq = None
 
-
     def load(self, **kwargs):
         """Load a dataset.
 
@@ -69,9 +70,8 @@ class GrazB(Dataset):
 
         """
 
-
         mat1 = scipy.io.loadmat(self.fT)['data']
-        #mat2 = scipy.io.loadmat(folder_dir + file_dir2)['data']
+        # mat2 = scipy.io.loadmat(folder_dir + file_dir2)['data']
         # dict_keys(['__header__', '__globals__', '__version__', 'data'])
 
         # Load Test Data
@@ -80,14 +80,16 @@ class GrazB(Dataset):
         trials_bt = []
         n_experiments = 3
         for i in range(n_experiments):
-            data      = mat1[0,i][0][0][0]
-            trials    = mat1[0,i][0][0][1]
-            labels    = mat1[0,i][0][0][2] - 1
+            data = mat1[0, i][0][0][0]
+            trials = mat1[0, i][0][0][1]
+            labels = mat1[0, i][0][0][2] - 1
             # TODO: fs shadows self.fs? do we need to store this somewhere?
-            fs        = mat1[0,i][0][0][3].flatten()[0]
+            fs = mat1[0, i][0][0][3].flatten()[0]
             if fs != self.expected_freq_s:
-                raise DatasetError("GrazB Dataset ({id}) Sampling Frequencies don't match (expected {f1}, got {f2})".format(id=self.data_id, f1=self.expected_freq_s, f2=fs))
-            artifacts = mat1[0,i][0][0][5]
+                raise DatasetError(
+                    "GrazB Dataset ({id}) Sampling Frequencies don't match (expected {f1}, got {f2})".format(
+                        id=self.data_id, f1=self.expected_freq_s, f2=fs))
+            artifacts = mat1[0, i][0][0][5]
             # remove artivacts
             artifact_idxs = np.where(artifacts == 1)[0]
             trials = np.delete(trials, artifact_idxs)
@@ -106,10 +108,9 @@ class GrazB(Dataset):
         trials_bt = np.concatenate((trials_bt[0], trials_bt[1], trials_bt[2]))
         labels_bt = np.concatenate((labels_bt[0], labels_bt[1], labels_bt[2]))
 
-        self.raw_data = data_bt[:,:3]
+        self.raw_data = data_bt[:, :3]
         self.trials = trials_bt
         self.labels = labels_bt
         self.sampling_freq = self.expected_freq_s
 
         return self
-
